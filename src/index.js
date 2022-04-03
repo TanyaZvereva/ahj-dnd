@@ -26,10 +26,27 @@ function renderColumn(column, array) {
             droppableTask=index
         })
          task.addEventListener('dragend',(event) => {
-            const temp = array[draggableTask]
-            array[draggableTask] = array[droppableTask]
-            array[droppableTask] = temp
-            renderColumn(column, array)
+            let target=document.elementFromPoint(event.clientX,event.clientY)
+            while(target && !target.id){
+                target = target.parentElement
+            }
+            if(target.id === column.parentElement.id) {
+                const temp = array[draggableTask]
+                array[draggableTask] = array[droppableTask]
+                array[droppableTask] = temp
+                renderColumn(column, array)
+            }else{
+                const arrayMap = {'first-column': firstColumn, 'second-column': secondColumn, 'third-column': thirdColumn}
+                const droppableArray = arrayMap[target.id]
+                const temp = array[draggableTask]
+                array.splice(draggableTask, 1)
+                droppableArray.push(temp)
+                renderColumn(column, array)
+                renderColumn(target.querySelector('.task-list'),droppableArray)
+            }
+        })
+        document.addEventListener('drop', (event) => {
+            
         })
         
         const text =document.createElement('span')
