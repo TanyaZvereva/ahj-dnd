@@ -1,31 +1,45 @@
 import './css/style.css'
-const firstColumn = ["Lorem ipsum dolor sit amet consectetur adipisicing elit."]
-const secondColumn = []
-const thirdColumn = []
+const firstColumn = window.localStorage.getItem('first-column') && JSON.parse(window.localStorage.getItem('first-column')) || []
+const secondColumn = window.localStorage.getItem('second-column') && JSON.parse(window.localStorage.getItem('second-column')) || []
+const thirdColumn = window.localStorage.getItem('third-column') && JSON.parse(window.localStorage.getItem('third-column')) || []
 let draggableTask = null
 let droppableTask = null
 
 function AddCard(event, array, taskListElement) {
     const textarea = event.target.parentElement.querySelector('textarea')
     const cardName = textarea.value
-    cardName && array.push(cardName)
-    console.log(array)
+    if(cardName) {
+        array.push(cardName)
+    }
     renderColumn(taskListElement, array)
 }
 
 function renderColumn(column, array) {
     column.innerHTML = ''
+    column.addEventListener('dragover', (event) => {
+        event.preventDefault()
+        event.dataTransfer.dropEffect = 'move'
+        console.log(event)
+        // event.target.style.cursor = 'grabbing'
+    })
+    window.localStorage.setItem(column.parentElement.id,JSON.stringify(array))
     array.forEach((element, index) => {
         const task =document.createElement('div')
         task.setAttribute('draggable', 'true')
         task.classList.add('task')
         task.addEventListener('dragstart',(event) => {
+            event.dataTransfer.dropEffect = 'move'
             draggableTask=index
+            event.target.style.cursor = 'grab'
         })
         task.addEventListener('dragover',(event) => {
+            event.preventDefault()
+            event.dataTransfer.dropEffect = 'move'
             droppableTask=index
+            event.target.style.cursor = 'grabbing'
         })
          task.addEventListener('dragend',(event) => {
+            task.classList.remove('grabbing')
             let target=document.elementFromPoint(event.clientX,event.clientY)
             while(target && !target.id){
                 target = target.parentElement
@@ -44,9 +58,6 @@ function renderColumn(column, array) {
                 renderColumn(column, array)
                 renderColumn(target.querySelector('.task-list'),droppableArray)
             }
-        })
-        document.addEventListener('drop', (event) => {
-            
         })
         
         const text =document.createElement('span')
@@ -74,3 +85,8 @@ const thirdSection = document.querySelector('#third-column button')
 const thirdTaskList = document.querySelector('#third-column .task-list')
 thirdSection.addEventListener('click', (e) => AddCard(e, thirdColumn, thirdTaskList))
 
+document.addEventListener('DOMContentLoaded', () => {
+    renderColumn(firstTaskList, firstColumn)
+    renderColumn(secondTaskList, secondColumn)
+    renderColumn(thirdTaskList, thirdColumn)
+})
